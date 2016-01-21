@@ -250,24 +250,34 @@ var countrylist = ['United States','Afghanistan','Albania','Algeria','Andorra','
 'South Korea','Spain','Sri Lanka','St Kitts &amp; Nevis','St Lucia','St Vincent','St. Lucia','Sudan','Suriname','Swaziland','Sweden','Switzerland','Syria','Taiwan','Tajikistan','Tanzania','Thailand','Timor L\'Este','Togo','Tonga','Trinidad &amp; Tobago','Tunisia','Turkey','Turkmenistan','Turks &amp; Caicos','Uganda','Ukraine','United Arab Emirates','United Kingdom','Uruguay','Uzbekistan','Venezuela','Vietnam','Virgin Islands (US)','Yemen','Zambia','Zimbabwe'];
 var MemberInfo = React.createClass({
   render: function(){
-    return(
-      <fieldset>
-        <h2 className="fs-title">Contact Details</h2>
-        <h3 className="fs-subtitle">Please enter contact information</h3>
-        <input type="text" name="contactname" placeholder="Full Legal Name"/>
-        <input type="text" name="email" placeholder="Email" />
-        <textarea name="address" placeholder="Address"></textarea>
-        <input type="text" name="city" placeholder="City" />
-        <label><input type="button" name="previous" className="previous action-button" onClick={this.props.previousChange}  value="Previous" /></label>
-        <label><input type="submit" name="submit" className="submit action-button" value="Submit" /></label>
-      </fieldset>
-    )
+    var repeated=[]
+    for (var i = 0; i < this.props.companySize; i++) {
+
+      repeated.push((
+        <div>
+
+          <input type="text" name="contactname" placeholder="Full Legal Name"/>
+          <input type="text" name="email" placeholder="Email" />
+          <textarea name="address" placeholder="Address"></textarea>
+          <input type="text" name="city" placeholder="City" />
+
+        </div>
+      ))
+    }
+    return (<fieldset>
+      <h2 className="fs-title">Contact Details</h2>
+      <h3 className="fs-subtitle">Please enter contact information</h3>
+      {repeated}
+      <label><input type="button" name="previous" className="previous action-button" onClick={this.props.previousChange}  value="Previous" /></label>
+      <label><input type="submit" name="submit" className="submit action-button" value="Submit" /></label>
+    </fieldset>)
   }
 })
 var Company = React.createClass({
-  getInitialState(){
+  getInitialState: function(){
     return{
-      companyType:''
+      companyType:'',
+      companySize:1
     }
   },
   handleChange: function (key) {
@@ -290,8 +300,8 @@ var Company = React.createClass({
     if(animating) return false;
     animating = true;
 
-    current_fs = $(element.target).parent().parent();
-    previous_fs = $(element.target).parent().parent().prev();
+    current_fs = $(element.target).parents('fieldset');
+    previous_fs = $(element.target).parents('fieldset').prev();
 
     //de-activate current step on progressbar
     $("#progressbar li").eq($("fieldset").index(current_fs)).removeClass("active");
@@ -328,8 +338,8 @@ var Company = React.createClass({
     if(animating) return false;
     animating = true;
 
-    current_fs = $(element.target).parent().parent();
-    next_fs = $(element.target).parent().parent().next();
+    current_fs = $(element.target).parents('fieldset');
+    next_fs = $(element.target).parents('fieldset').next();
 
     //activate next step on progressbar using the index of next_fs
     $("#progressbar li").eq($("fieldset").index(next_fs)).addClass("active");
@@ -403,7 +413,7 @@ var Company = React.createClass({
         Country
         {selectcountry}
         <label>
-          <input type="text" name="companysize" placeholder="Company Size" />
+          <input type="text" name="companysize" placeholder="Company Size" value={this.state.companySize} onChange={this.handleChange('companySize')} />
 
         </label>
         <label>
@@ -426,8 +436,8 @@ var Company = React.createClass({
           </ul>
           {structure}
           {details}
-          <MemberInfo class={this.state.companyType==="llc" ? '':"hidden"} totalstock={false} previousChange={this.previousChange} />
-          <MemberInfo class={this.state.companyType==="inc" ? '':"hidden"} totalstock={true} previousChange={this.previousChange} />
+          <MemberInfo class={this.state.companyType==="llc" ? '':"hidden"} companySize={this.state.companySize} totalstock={false} previousChange={this.previousChange} />
+          <MemberInfo class={this.state.companyType==="inc" ? '':"hidden"} companySize={this.state.companySize} totalstock={true} previousChange={this.previousChange} />
         </form>
       </div>
     )
