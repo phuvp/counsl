@@ -26,11 +26,11 @@ body {
 	border-radius: 3px;
 	box-shadow: 0 0 15px 1px rgba(0, 0, 0, 0.4);
 	padding: 20px 30px;
-
+	
 	box-sizing: border-box;
 	width: 80%;
 	margin: 0 10%;
-
+	
 	/*stacking fieldsets above each other*/
 	position: relative;
 }
@@ -149,7 +149,7 @@ body {
 }
 #progressbar li:first-child:after {
 	/*connector not needed before the first step*/
-	content: none;
+	content: none; 
 }
 /*marking active/completed steps green*/
 /*The number of the step and the connector before it = green*/
@@ -176,7 +176,7 @@ img {
 /*LCC - CORP*/
 .LLC{
     width: 30%;
-    margin-right: 10px;
+    margin-right: 10px;   
     margin-bottom: 10px;
 }
 .Corp{
@@ -215,7 +215,4 @@ img {
 
 #msform .LCC:hover, #msform .LCC:focus {
 	box-shadow: 0 0 0 2px white, 0 0 0 3px #27AE60;
-}
-.hidden {
-	display: none;
 }
