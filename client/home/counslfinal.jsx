@@ -95,4 +95,5 @@ FlowRouter.route('/',{
   name: 'home',
   action: function(params, queryParams) {
     mount(Home, {name: 'home'});
-  }});
+  }
+});
