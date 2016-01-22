@@ -3,7 +3,7 @@ var ReactDOM = require('react-dom');
 import {mount} from 'react-mounter';
 var Dropzone = require('react-dropzone');
 
-LawFirms = new Mongo.Collection('lawfirms');
+LawDb = new Mongo.Collection('lawdb');
 
 var DropzoneDemo = React.createClass({
   getInitialState: function () {

@@ -1,5 +1,6 @@
 import React from 'react'
 import {mount} from 'react-mounter'
+
 var america = [
   {
     'name': 'Alabama',
@@ -248,28 +249,62 @@ var countrylist = ['United States','Afghanistan','Albania','Algeria','Andorra','
 'Malta','Mauritania','Mauritius','Mexico','Moldova','Monaco','Mongolia','Montenegro','Montserrat','Morocco','Mozambique','Namibia','Nepal','Netherlands','Netherlands Antilles','New Caledonia','New Zealand','Nicaragua','Niger','Nigeria','Norway','Oman','Pakistan','Palestine','Panama',
 'Papua New Guinea','Paraguay','Peru','Philippines','Poland','Portugal','Puerto Rico','Qatar','Reunion','Romania','Russia','Rwanda','Saint Pierre &amp; Miquelon','Samoa','San Marino','Satellite','Saudi Arabia','Senegal','Serbia','Seychelles','Sierra Leone','Singapore','Slovakia','Slovenia','South Africa',
 'South Korea','Spain','Sri Lanka','St Kitts &amp; Nevis','St Lucia','St Vincent','St. Lucia','Sudan','Suriname','Swaziland','Sweden','Switzerland','Syria','Taiwan','Tajikistan','Tanzania','Thailand','Timor L\'Este','Togo','Tonga','Trinidad &amp; Tobago','Tunisia','Turkey','Turkmenistan','Turks &amp; Caicos','Uganda','Ukraine','United Arab Emirates','United Kingdom','Uruguay','Uzbekistan','Venezuela','Vietnam','Virgin Islands (US)','Yemen','Zambia','Zimbabwe'];
+
 var MemberInfo = React.createClass({
+  getInitialState: function(){
+    var data = []
+    for (var i = 0; i < this.props.companySize; i++) {
+      data.push({
+        contactname:'',
+        contactemail:'',
+        contactaddress:'',
+        contactcity:''
+      })
+    }
+    var state = {}
+    state['data'] = data
+    return state
+  },
+  handleChange: function(key,i){
+    return function (e){
+      var data = this.state.data;
+      data[i][key] = e.target.value;
+      this.setState({data:data});
+    }.bind(this);
+  },
+  updateCompanySize: function(companySize) {
+    var data = this.state.data
+    for (var i = 0; i < companySize-data.length; i++) {
+      data.push({
+        contactname:'',
+        contactemail:'',
+        contactaddress:'',
+        contactcity:''
+      })
+    }
+    this.setState({data:data})
+  },
   render: function(){
+
     var repeated=[]
     for (var i = 0; i < this.props.companySize; i++) {
-
       repeated.push((
         <div>
-
-          <input type="text" name="contactname" placeholder="Full Legal Name"/>
-          <input type="text" name="email" placeholder="Email" />
-          <textarea name="address" placeholder="Address"></textarea>
-          <input type="text" name="city" placeholder="City" />
-
+          <input type="text" name="contactname" placeholder="Full Legal Name" onChange={this.handleChange('contactname',i)} value={this.state.data[i].contactname}/>
+          <input type="text" name="contactemail" placeholder="Email" onChange={this.handleChange('contactemail',i)} value={this.state.data[i].contactemail} />
+          <textarea name="contactaddress" placeholder="Address" onChange={this.handleChange('contactaddress',i)} value={this.state.data[i].contactaddress}></textarea>
+          <input type="text" name="contactcity" placeholder="City" onChange={this.handleChange('contactcity',i)} value={this.state.data[i].contactcity} />
         </div>
+
+
       ))
     }
     return (<fieldset>
       <h2 className="fs-title">Contact Details</h2>
       <h3 className="fs-subtitle">Please enter contact information</h3>
       {repeated}
-      <label><input type="button" name="previous" className="previous action-button" onClick={this.props.previousChange}  value="Previous" /></label>
-      <label><input type="submit" name="submit" className="submit action-button" value="Submit" /></label>
+      <label><input type="button" name="previous" className="previous action-button" onClick={this.props.previousChange} value="Previous" /></label>
+      <label><input type="submit" name="submit" className="submit action-button" value="Submit" onClick={this.props.storeDB(this.state)} /></label>
     </fieldset>)
   }
 })
@@ -277,10 +312,21 @@ var Company = React.createClass({
   getInitialState: function(){
     return{
       companyType:'',
-      companySize:1
+      companySize:1,
+      city:'',
+      email:'phuvp@mit.edu',
+      address:'',
+      phone:'',
+      name:'DLA Piper',
+      llc:'',
+      corporation:'',
+      state:'',
+      country:'',
+      membersinfo:'',
+      lawfirm:this.props.lawfirm
     }
   },
-  handleChange: function (key) {
+  handleChange: function (key,type) {
     return function (e) {
       if(key=='llc' || key=='corporation'){
         this.setState({companyType:key})
@@ -289,8 +335,16 @@ var Company = React.createClass({
       }
 
       var state = {};
-      state[key] = e.target.value;
+      if(type=='select')
+        state[key]=e.target.options[e.target.selectedIndex].value
+      else
+        state[key] = e.target.value;
       this.setState(state);
+
+      if(key=='companySize') {
+        this.refs.llcMemberInfo.updateCompanySize(e.target.value)
+        this.refs.incMemberInfo.updateCompanySize(e.target.value)
+      }
     }.bind(this);
   },
   previousChange: function(element){
@@ -329,6 +383,15 @@ var Company = React.createClass({
       //this comes from the custom easing plugin
       easing: 'easeInOutBack'
     });
+  },
+  storeDB: function (membersinfo){
+    return function(e){
+      e.preventDefault()
+      this.setState({membersinfo:membersinfo},function() {
+        console.log(CompanyDb.insert);
+        CompanyDb.insert(this.state)
+      })
+    }.bind(this)
   },
   nextChange: function (element){
     //jQuery time
@@ -373,16 +436,24 @@ var Company = React.createClass({
   },
   render: function(){
     var companyType='';
+    var self=this
     var options=america.map(function (current) {
-
-      return(<option value={current.name}> {current.name}  </option>)
+      return(<option value={current.name} selected={current==self.state.state}> {current.name}  </option>)
     })
-    var selectelem=React.createElement('select',{children:options})
-    var countryselect=countrylist.map(function (current){
-      return(<option value={current}>{current}</option>)
+    var selectelem=(
+      <select onChange={this.handleChange("state",'select')}>
+        {options}
+      </select>
+    )
+    var countryOptions=countrylist.map(function (current){
+      return(<option value={current} selected={current==self.state.country}>{current}</option>)
     })
 
-    var selectcountry=React.createElement('select',{children:countryselect})
+    var selectcountry=(
+      <select onChange={this.handleChange("country",'select')}>
+        {countryOptions}
+      </select>
+    )
 
     var structure = (
       <fieldset>
@@ -403,11 +474,11 @@ var Company = React.createClass({
       <fieldset>
         <h2 className="fs-title">Company Details</h2>
         <h3 className="fs-subtitle">Basic information about your company</h3>
-        <input type="text" name="name" placeholder="Full Legal Name"/>
-        <input type="text" name="phone" placeholder="Phone" />
-        <input type="text" name="email" placeholder="Email" />
-        <textarea name="address" placeholder="Address"></textarea>
-        <input type="text" name="city" placeholder="City" />
+        <input type="text" name="name" placeholder="Full Legal Name" onChange={this.handleChange('name')}/>
+        <input type="text" name="phone" placeholder="Phone" onChange={this.handleChange('phone')}/>
+        <input type="text" name="email" placeholder="Email" onChange={this.handleChange('email')} />
+        <textarea name="address" placeholder="Address" onChange={this.handleChange('address')}></textarea>
+        <input type="text" name="city" placeholder="City" onChange={this.handleChange('city')} />
         State
         {selectelem}
         Country
@@ -428,6 +499,8 @@ var Company = React.createClass({
     )
     return (
       <div>
+        <header id="title"><img src="/download.png"/>
+        </header>
         <form id="msform">
           <ul id="progressbar">
             <li className="active">Incorporated As</li>
@@ -436,17 +509,25 @@ var Company = React.createClass({
           </ul>
           {structure}
           {details}
-          <MemberInfo class={this.state.companyType==="llc" ? '':"hidden"} companySize={this.state.companySize} totalstock={false} previousChange={this.previousChange} />
-          <MemberInfo class={this.state.companyType==="inc" ? '':"hidden"} companySize={this.state.companySize} totalstock={true} previousChange={this.previousChange} />
+          <MemberInfo ref="llcMemberInfo" class={this.state.companyType==="llc" ? '':"hidden"} companySize={this.state.companySize} totalstock={false} storeDB={this.storeDB} previousChange={this.previousChange} />
+          <MemberInfo ref="incMemberInfo" class={this.state.companyType==="inc" ? '':"hidden"} companySize={this.state.companySize} totalstock={true} storeDB={this.storeDB} previousChange={this.previousChange} />
         </form>
       </div>
     )
   }
 
 })
-FlowRouter.route('/company',{
+
+FlowRouter.route('/:company',{
   name: 'company',
   action: function(params, queryParams) {
-    mount(Company);
+    var lawprop=LawDb.findOne({name: params.company})
+    String.prototype.capitalize = function(){
+    return this.toLowerCase().replace( /\b\w/g, function (m) {
+        return m.toUpperCase();
+    });
+};
+    var lawname = params.company.replace("-"," ").capitalize()
+    mount(Company, {lawfirm: lawname});
   }
 });
