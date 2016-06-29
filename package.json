@@ -10,10 +10,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "react": "^0.14.6",
-    "react-dom": "^0.14.6",
-    "react-dropzone": "^2.2.4",
-    "react-mounter": "^1.0.0"
+    "react-dropzone": "^3.5.1"
   },
   "devDependencies": {
     "webpack": "^1.12.11"
